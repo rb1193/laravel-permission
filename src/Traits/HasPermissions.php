@@ -9,7 +9,9 @@ use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Contracts\Permission;
 use Spatie\Permission\Exceptions\GuardDoesNotMatch;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Spatie\Permission\Contracts\Scope;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
+use Spatie\Permission\Exceptions\ScopeDoesNotExist;
 
 trait HasPermissions
 {
@@ -222,7 +224,30 @@ trait HasPermissions
      */
     protected function hasPermissionViaRole(Permission $permission): bool
     {
-        return $this->hasRole($permission->roles);
+        return $this->hasRole($permission->roles) && $this->checkScope($permission);
+    }
+
+
+    /**
+     * Check if this passes the permission scope
+     *
+     * @param Spatie\Permission\Contracts\Permission $permission
+     *
+     * @return boolean
+     */
+    protected function checkScope(Permission $permission): bool
+    {
+        $scope = $permission->getScope();
+
+        if (is_null($scope)) {
+            return true;
+        }
+
+        if (!$scope instanceof Scope) {
+            throw ScopeDoesNotExist::named($scope);
+        }
+
+        return $scope->apply($this);
     }
 
     /**
@@ -255,7 +280,7 @@ trait HasPermissions
             return false;
         }
 
-        return $this->permissions->contains('id', $permission->id);
+        return $this->permissions->contains('id', $permission->id) && $permission->checkScope($this);
     }
 
     /**

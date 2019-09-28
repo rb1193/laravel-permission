@@ -126,4 +126,21 @@ return [
 
         'store' => 'default',
     ],
+
+    'scopes' => [
+
+        /**
+         * When you want to give a permission based on a condition, you can use a scope
+         * to apply the condition. The separator is used to demarcate the part of the
+         * permission name which is the scope
+         */
+        'separator' => ':',
+
+        /**
+         * Bind scopes to their instances here, .e.g. 'owns' => \App\Auth\Scopes\Owns.php
+         *
+         * All scopes must implement \Spatie\Permission\Contracts\Scope
+         */
+        'bindings' => [],
+    ]
 ];

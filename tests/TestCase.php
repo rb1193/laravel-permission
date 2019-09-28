@@ -82,6 +82,8 @@ abstract class TestCase extends Orchestra
         // Use test User model for users provider
         $app['config']->set('auth.providers.users.model', User::class);
 
+        $app['config']->set('permission.scopes.bindings', ['own' => Own::class]);
+
         $app['config']->set('cache.prefix', 'spatie_tests---');
     }
 

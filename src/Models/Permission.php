@@ -11,8 +11,11 @@ use Spatie\Permission\Traits\RefreshesPermissionCache;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Spatie\Permission\Exceptions\PermissionDoesNotExist;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Str;
 use Spatie\Permission\Exceptions\PermissionAlreadyExists;
 use Spatie\Permission\Contracts\Permission as PermissionContract;
+use Spatie\Permission\Contracts\Scope;
+use Spatie\Permission\Exceptions\ScopeDoesNotExist;
 
 class Permission extends Model implements PermissionContract
 {
@@ -72,6 +75,27 @@ class Permission extends Model implements PermissionContract
             'permission_id',
             config('permission.column_names.model_morph_key')
         );
+    }
+
+    /**
+     * Get the scope for this permission
+     *
+     * @return \Spatie\Permission\Contracts\Scope|null
+     */
+    public function getScope(): ?Scope
+    {
+        $config = config('permission.scopes');
+        $scope = Str::after($this->name, $config['separator']);
+
+        if ($scope === $this->name) {
+            return null;
+        }
+
+        if (!array_key_exists($scope, $config['bindings'])) {
+            throw ScopeDoesNotExist::named($scope);
+        }
+
+        return app($config['bindings'][$scope]);
     }
 
     /**
